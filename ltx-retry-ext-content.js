@@ -1,5 +1,7 @@
 (() => {
   let btnInjected = false;
+  let totalRetries = 0;
+  let pollingInterval = null;
 
   console.log('[LTX Retry All] Content script loaded on:', window.location.href);
 
@@ -7,6 +9,38 @@
     return [...document.querySelectorAll('button')].filter(b =>
       b.textContent.includes('Retry')
     );
+  }
+
+  function retryAll(btn) {
+    let clicked = 0;
+    document.querySelectorAll('button').forEach(b => {
+      if (b.textContent.includes('Retry')) {
+        b.click();
+        clicked++;
+      }
+    });
+
+    if (clicked > 0) {
+      totalRetries += clicked;
+      console.log(`[LTX Retry All] Auto-retried ${clicked} (total: ${totalRetries})`);
+      btn.innerHTML = `🔄 Retrying ${clicked}... (${totalRetries} total)`;
+      setTimeout(() => {
+        btn.innerHTML = `👀 Watching... (${totalRetries} retried)`;
+      }, 2000);
+    }
+
+    return clicked;
+  }
+
+  function startPolling(btn) {
+    if (pollingInterval) return;
+
+    console.log('[LTX Retry All] Auto-retry polling started');
+    btn.innerHTML = '👀 Watching...';
+
+    pollingInterval = setInterval(() => {
+      retryAll(btn);
+    }, 3000);
   }
 
   function injectButton() {
@@ -20,34 +54,28 @@
 
     const btn = document.createElement('button');
     btn.id = 'ltx-retry-all-btn';
-    btn.innerHTML = '🔄 Retry All';
-    btn.title = 'Click all visible Retry buttons, then scrolls to find more';
+    btn.innerHTML = '👀 Watching...';
+    btn.title = 'Auto-retries failed generations. Click for an immediate retry pass.';
 
+    // Manual click for an immediate pass
     btn.addEventListener('click', () => {
-      btn.disabled = true;
-      btn.innerHTML = '⏳ Retrying...';
-
-      let clicked = 0;
-      document.querySelectorAll('button').forEach(b => {
-        if (b.textContent.includes('Retry')) {
-          b.click();
-          clicked++;
-        }
-      });
-
-      console.log(`[LTX Retry All] Clicked ${clicked} Retry buttons`);
-      btn.innerHTML = `✅ Retried ${clicked} items`;
-      btn.disabled = false;
-      setTimeout(() => { btn.innerHTML = '🔄 Retry All'; }, 3000);
+      const clicked = retryAll(btn);
+      if (clicked === 0) {
+        btn.innerHTML = '✅ Nothing to retry';
+        setTimeout(() => {
+          btn.innerHTML = totalRetries > 0
+            ? `👀 Watching... (${totalRetries} retried)`
+            : '👀 Watching...';
+        }, 2000);
+      }
     });
 
     document.body.appendChild(btn);
     btnInjected = true;
     console.log('[LTX Retry All] Button injected successfully');
-  }
 
-  function sleep(ms) {
-    return new Promise(r => setTimeout(r, ms));
+    // Start auto-retry polling
+    startPolling(btn);
   }
 
   function init() {
