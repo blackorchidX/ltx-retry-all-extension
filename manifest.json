@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "LTX Studio - Retry All",
+  "description": "Adds a Retry All button to LTX Studio Gen Space",
+  "version": "1.0",
+  "permissions": ["activeTab"],
+  "content_scripts": [
+    {
+      "matches": ["https://app.ltx.studio/*"],
+      "js": ["ltx-retry-ext-content.js"],
+      "css": ["ltx-retry-ext-styles.css"]
+    }
+  ],
+  "icons": {
+    "48": "ltx-retry-icon.png",
+    "128": "ltx-retry-icon.png"
+  }
+}
