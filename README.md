@@ -1,4 +1,4 @@
-# LTX Studio — Retry All (Nano Banana Pro)
+# 🍌 LTX Studio — Retry All (Nano Banana Pro)
 
 A Chrome extension that adds a **Retry All** button to the [LTX Studio](https://app.ltx.studio) Gen Workspace. One click retries all failed **Nano Banana Pro** image generations instead of clicking each one manually.
 
