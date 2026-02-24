@@ -3,26 +3,34 @@
   bottom: 24px;
   right: 24px;
   z-index: 2147483647;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
-  background: #7c3aed;
+  padding: 12px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  background: rgba(124, 58, 237, 0.35);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   color: white;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  transition: all 0.2s ease;
+  box-shadow:
+    0 4px 24px rgba(124, 58, 237, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition: all 0.25s ease;
+  letter-spacing: 0.3px;
 }
 
 #ltx-retry-all-btn:hover {
-  background: #6d28d9;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  background: rgba(124, 58, 237, 0.5);
+  border-color: rgba(255, 255, 255, 0.35);
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 32px rgba(124, 58, 237, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 #ltx-retry-all-btn:disabled {
-  opacity: 0.7;
+  opacity: 0.6;
   cursor: wait;
   transform: none;
 }
