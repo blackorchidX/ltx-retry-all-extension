@@ -2,16 +2,11 @@
   let btnInjected = false;
   let totalRetries = 0;
   let pollingInterval = null;
+  let active = true;
 
   console.log('[LTX Retry All] Content script loaded on:', window.location.href);
 
-  function getRetryButtons() {
-    return [...document.querySelectorAll('button')].filter(b =>
-      b.textContent.includes('Retry')
-    );
-  }
-
-  function retryAll(btn) {
+  function retryAll() {
     let clicked = 0;
     document.querySelectorAll('button').forEach(b => {
       if (b.textContent.includes('Retry')) {
@@ -23,24 +18,42 @@
     if (clicked > 0) {
       totalRetries += clicked;
       console.log(`[LTX Retry All] Auto-retried ${clicked} (total: ${totalRetries})`);
-      btn.innerHTML = `🔄 Retrying ${clicked}... (${totalRetries} total)`;
-      setTimeout(() => {
-        btn.innerHTML = `👀 Watching... (${totalRetries} retried)`;
-      }, 2000);
     }
 
     return clicked;
+  }
+
+  function updateLabel(btn, text) {
+    // Keep the toggle icon on the right
+    btn.querySelector('.ltx-label').textContent = text;
   }
 
   function startPolling(btn) {
     if (pollingInterval) return;
 
     console.log('[LTX Retry All] Auto-retry polling started');
-    btn.innerHTML = '👀 Watching...';
+    updateLabel(btn, '👀 Watching...');
 
     pollingInterval = setInterval(() => {
-      retryAll(btn);
+      if (!active) return;
+
+      const clicked = retryAll();
+      if (clicked > 0) {
+        updateLabel(btn, `🔄 Retrying ${clicked}... (${totalRetries} total)`);
+        setTimeout(() => {
+          if (active) updateLabel(btn, `👀 Watching... (${totalRetries} retried)`);
+        }, 2000);
+      }
     }, 3000);
+  }
+
+  function stopPolling(btn) {
+    if (pollingInterval) {
+      clearInterval(pollingInterval);
+      pollingInterval = null;
+    }
+    console.log('[LTX Retry All] Auto-retry paused');
+    updateLabel(btn, `⏸ Paused${totalRetries > 0 ? ` (${totalRetries} retried)` : ''}`);
   }
 
   function injectButton() {
@@ -54,18 +67,43 @@
 
     const btn = document.createElement('button');
     btn.id = 'ltx-retry-all-btn';
-    btn.innerHTML = '👀 Watching...';
-    btn.title = 'Auto-retries failed generations. Click for an immediate retry pass.';
+    btn.title = 'Auto-retries failed generations. Click the toggle to enable/disable.';
 
-    // Manual click for an immediate pass
+    // Label span
+    const label = document.createElement('span');
+    label.className = 'ltx-label';
+    label.textContent = '👀 Watching...';
+    btn.appendChild(label);
+
+    // Toggle switch
+    const toggle = document.createElement('span');
+    toggle.className = 'ltx-toggle active';
+    toggle.innerHTML = '<span class="ltx-toggle-knob"></span>';
+    btn.appendChild(toggle);
+
+    // Clicking the toggle switches on/off
+    toggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      active = !active;
+      toggle.classList.toggle('active', active);
+
+      if (active) {
+        startPolling(btn);
+      } else {
+        stopPolling(btn);
+      }
+    });
+
+    // Clicking the button itself does a manual retry pass
     btn.addEventListener('click', () => {
-      const clicked = retryAll(btn);
+      if (!active) return;
+      const clicked = retryAll();
       if (clicked === 0) {
-        btn.innerHTML = '✅ Nothing to retry';
+        updateLabel(btn, '✅ Nothing to retry');
         setTimeout(() => {
-          btn.innerHTML = totalRetries > 0
+          updateLabel(btn, totalRetries > 0
             ? `👀 Watching... (${totalRetries} retried)`
-            : '👀 Watching...';
+            : '👀 Watching...');
         }, 2000);
       }
     });
@@ -85,10 +123,8 @@
       return;
     }
 
-    // Try injecting immediately
     injectButton();
 
-    // Watch for SPA navigation
     const observer = new MutationObserver(() => {
       if (window.location.href.includes('gen-workspace')) {
         injectButton();
