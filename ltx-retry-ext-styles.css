@@ -32,6 +32,25 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
+/* Spinner */
+.ltx-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  display: none;
+}
+
+.ltx-spinner.spinning {
+  display: inline-block;
+  animation: ltx-spin 0.8s linear infinite;
+}
+
+@keyframes ltx-spin {
+  to { transform: rotate(360deg); }
+}
+
 /* Toggle switch */
 .ltx-toggle {
   display: inline-flex;
