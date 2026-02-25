@@ -6,7 +6,7 @@
   "permissions": ["activeTab"],
   "content_scripts": [
     {
-      "matches": ["https://app.ltx.studio/*", "https://app-dev.ltx.studio/*", "https://*.app-dev.ltx.studio/*"],
+      "matches": ["https://app.ltx.studio/*", "https://app-dev.ltx.studio/*"],
       "js": ["ltx-retry-ext-content.js"],
       "css": ["ltx-retry-ext-styles.css"]
     }
